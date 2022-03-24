@@ -1,3 +1,6 @@
+from curses.ascii import HT
+from http import HTTPStatus
+
 from app.models.series_model import Series
 from flask import jsonify, request
 
@@ -18,17 +21,21 @@ def create():
     
     serialized_serie = dict(zip(serie_columns,inserted_serie))
     
-    return serialized_serie, 201
+    return serialized_serie, HTTPStatus.CREATED
 
 
 def series():
     series = Series.read_series()
-    print(series)
     
     serialized_series = [dict(zip(serie_columns, serie)) for serie in series]
     
-    return jsonify(serialized_series), 200
+    return jsonify(serialized_series), HTTPStatus.OK
 
 
 def select_by_id(serie_id):
-    return {"teste": "teste"}, 200
+    serie = Series.read_serie_by_id(serie_id)
+    
+    if serie:
+        return dict(zip(serie_columns, serie)),200
+    
+    return {}, HTTPStatus.NOT_FOUND

@@ -1,4 +1,5 @@
 from app.models import DatabaseConnector
+from psycopg2 import sql
 
 table = """
             CREATE TABLE if not exists ka_series(
@@ -14,10 +15,10 @@ table = """
 
 class Series(DatabaseConnector):
     def __init__(self, **kwargs) -> None:
-        self.serie = kwargs["serie"]
+        self.serie = kwargs["serie"].title()
         self.seasons = kwargs["seasons"]
         self.released_date = kwargs["released_date"]
-        self.genre = kwargs["genre"]
+        self.genre = kwargs["genre"].title()
         self.imdb_rating = kwargs["imdb_rating"]
 
     def create_serie(self):
@@ -59,5 +60,22 @@ class Series(DatabaseConnector):
         
         return series
 
-    def read_serie_by_id(id):
-        pass
+    @classmethod
+    def read_serie_by_id(cls, id):
+        cls.get_conn_cur()
+        cls.cur.execute(table)
+        
+        query = sql.SQL("""
+            SELECT * FROM ka_series
+            WHERE id = {id}
+        """).format(
+            id=sql.Literal(id)
+        )
+        
+        cls.cur.execute(query)
+        serie = cls.cur.fetchone()
+        
+        cls.cur.close()
+        cls.conn.close()
+        
+        return serie
